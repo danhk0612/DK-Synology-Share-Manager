@@ -5,9 +5,13 @@ Synology NAS의 **File Station 공유 링크를 Windows에서 한꺼번에 관�
 ## 다운로드 및 실행
 
 1. [Releases](https://github.com/danhk0612/DK-Synology-Share-Manager/releases)에서 최신 `DKSynologyShareManager-...-win-x64.zip` 파일을 다운로드합니다.
-2. 압축을 푼 뒤 `DKSynologyShareManager.exe`를 실행합니다. 별도 설치나 .NET 설치가 필요 없습니다.
+2. 압축을 푼 뒤 `DKSynologyShareManager.exe`를 실행합니다. 프로그램 자체는 설치하지 않아도 되지만, **.NET 10 Desktop Runtime (x64)** 이 설치되어 있어야 합니다. 없는 경우 보통 Windows에서 필요한 .NET 설치 안내가 표시됩니다. 안내가 나타나지 않으면 아래 공식 링크에서 설치하세요.
 3. **NAS 연결 / 변경**에서 DSM HTTPS 주소(예: `https://nas.example.com:5001`), 계정과 비밀번호를 입력합니다. 2단계 인증이 설정된 경우 OTP도 입력합니다.
 4. NAS에 연결되면 기존 File Station 공유 링크가 목록에 표시됩니다.
+
+**.NET 다운로드:** [Microsoft .NET 10 Desktop Runtime (Windows x64)](https://dotnet.microsoft.com/ko-kr/download/dotnet/10.0) — 다운로드 페이지에서 **Desktop Runtime → Windows x64 Installer**를 선택합니다. *일반 .NET Runtime이나 SDK를 새로 설치할 필요는 없습니다.*
+
+**배포 방식:** .NET 런타임을 포함하지 않는 **경량 단일 EXE**만 제공합니다. 이미 .NET 10 Desktop Runtime이 설치되어 있다면 별도 설치 없이 실행됩니다.
 
 **필요 환경:** Windows 10/11 64비트, Synology DSM의 File Station 사용 권한. 전체 계정의 공유 링크를 관리하려면 NAS 관리자 권한이 필요합니다. DSM 7.4.1 환경에서 주요 기능을 확인했습니다.
 
