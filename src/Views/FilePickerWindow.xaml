@@ -1,0 +1,156 @@
+<Window x:Class="SynologyShareManager.Views.FilePickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DK Synology Share Manager — NAS 파일·폴더 선택" Icon="/Assets/DKShareManager.ico"
+        Width="1030" Height="690" MinWidth="760" MinHeight="500"
+        WindowStartupLocation="CenterOwner" Loaded="Window_Loaded">
+  <Window.Resources>
+    <DataTemplate x:Key="ExplorerNameTemplate">
+      <StackPanel Orientation="Horizontal" ToolTip="{Binding Path}" VerticalAlignment="Center">
+        <TextBlock FontFamily="Segoe UI Emoji" FontSize="17" Margin="0,0,9,0" VerticalAlignment="Center">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Text" Value="📄"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDirectory}" Value="True"><Setter Property="Text" Value="📁"/></DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+      </StackPanel>
+    </DataTemplate>
+    <DataTemplate x:Key="ExplorerTileTemplate">
+      <StackPanel Width="125" Margin="4" HorizontalAlignment="Center" ToolTip="{Binding Path}">
+        <Grid Width="70" Height="60" HorizontalAlignment="Center" Margin="0,1,0,6">
+          <TextBlock FontFamily="Segoe UI Emoji" FontSize="34" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Text" Value="📄"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsDirectory}" Value="True"><Setter Property="Text" Value="📁"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+          <Image Source="{Binding Thumbnail}" Stretch="Uniform" SnapsToDevicePixels="True">
+            <Image.Style>
+              <Style TargetType="Image">
+                <Setter Property="Visibility" Value="Visible"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Thumbnail}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Image.Style>
+          </Image>
+        </Grid>
+        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxHeight="36" TextTrimming="CharacterEllipsis"
+                   TextAlignment="Center" HorizontalAlignment="Center"/>
+      </StackPanel>
+    </DataTemplate>
+  </Window.Resources>
+  <Grid Margin="15">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+      <RowDefinition Height="Auto"/><RowDefinition Height="12"/>
+      <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <TextBlock Grid.Row="0" Text="NAS 파일·폴더 선택" Style="{StaticResource SectionTitleStyle}"/>
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <Button x:Name="BackButton" Click="Back_Click" Content="←" ToolTip="뒤로" MinWidth="35"/>
+        <Button x:Name="UpButton" Click="Up_Click" Content="↑" ToolTip="상위 폴더" MinWidth="35"/>
+        <Button Click="Root_Click" Content="공유 폴더" ToolTip="NAS 공유 폴더 목록"/>
+      </StackPanel>
+      <TextBox x:Name="CurrentPathBox" Grid.Column="1" IsReadOnly="True" Margin="3,0,12,0"
+               Background="White" VerticalContentAlignment="Center"/>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button x:Name="IconViewButton" Content="아이콘 보기" Click="IconView_Click"/>
+        <Button x:Name="DetailViewButton" Content="자세히 보기" Style="{StaticResource PrimaryButtonStyle}" Click="DetailView_Click" Margin="0"/>
+      </StackPanel>
+    </Grid>
+    <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,9" VerticalAlignment="Center">
+      <TextBlock Text="정렬" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource TextMutedBrush}"/>
+      <ComboBox x:Name="SortField" Width="150" SelectedIndex="0" SelectionChanged="SortField_Changed" ToolTip="이름, 날짜, 파일 크기, 유형별 정렬">
+        <ComboBoxItem Content="이름" Tag="Name"/>
+        <ComboBoxItem Content="수정한 날짜" Tag="Modified"/>
+        <ComboBoxItem Content="유형" Tag="Type"/>
+        <ComboBoxItem Content="크기" Tag="Size"/>
+        <ComboBoxItem Content="만든 날짜" Tag="Created"/>
+        <ComboBoxItem Content="NAS 경로" Tag="Path"/>
+      </ComboBox>
+      <Button x:Name="SortDirectionButton" Content="오름차순 ↑" Click="SortDirection_Click" Margin="9,0,0,0"/>
+    </StackPanel>
+    <Grid Grid.Row="5">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="215" MinWidth="150"/>
+        <ColumnDefinition Width="5"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Border Grid.Column="0" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="6" Background="White">
+        <TreeView x:Name="FolderTree" BorderThickness="0" Margin="3" SelectedItemChanged="FolderTree_SelectedItemChanged"
+                  TreeViewItem.Expanded="FolderTree_Expanded"/>
+      </Border>
+      <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Width="5" Background="Transparent" ResizeBehavior="PreviousAndNext"/>
+      <Border Grid.Column="2" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="6" Background="White">
+        <Grid>
+          <ListView x:Name="DetailsList" BorderThickness="0" Background="Transparent" SelectionMode="Single"
+                    MouseDoubleClick="FilesList_DoubleClick" SelectionChanged="FilesSelection_Changed">
+            <ListView.View>
+              <GridView>
+                <GridViewColumn CellTemplate="{StaticResource ExplorerNameTemplate}" Width="275">
+                  <GridViewColumn.Header><GridViewColumnHeader Content="이름" Tag="Name" Click="DetailsHeader_Click"/></GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding ModifiedLabel}" Width="145">
+                  <GridViewColumn.Header><GridViewColumnHeader Content="수정한 날짜" Tag="Modified" Click="DetailsHeader_Click"/></GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding TypeLabel}" Width="92">
+                  <GridViewColumn.Header><GridViewColumnHeader Content="유형" Tag="Type" Click="DetailsHeader_Click"/></GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding SizeLabel}" Width="95">
+                  <GridViewColumn.Header><GridViewColumnHeader Content="크기" Tag="Size" Click="DetailsHeader_Click"/></GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding CreatedLabel}" Width="145">
+                  <GridViewColumn.Header><GridViewColumnHeader Content="만든 날짜" Tag="Created" Click="DetailsHeader_Click"/></GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path}" Width="315">
+                  <GridViewColumn.Header><GridViewColumnHeader Content="NAS 경로" Tag="Path" Click="DetailsHeader_Click"/></GridViewColumn.Header>
+                </GridViewColumn>
+              </GridView>
+            </ListView.View>
+          </ListView>
+          <ListBox x:Name="IconsList" Visibility="Collapsed" BorderThickness="0" Background="Transparent"
+                   SelectionMode="Single" ItemTemplate="{StaticResource ExplorerTileTemplate}"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                   MouseDoubleClick="FilesList_DoubleClick" SelectionChanged="FilesSelection_Changed"
+                   SizeChanged="IconsList_SizeChanged" ScrollViewer.ScrollChanged="IconsList_ScrollChanged">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel IsItemsHost="True" Orientation="Horizontal"/></ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemContainerStyle>
+              <Style TargetType="ListBoxItem">
+                <Setter Property="Width" Value="145"/>
+                <Setter Property="Height" Value="118"/>
+                <Setter Property="Margin" Value="4"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+              </Style>
+            </ListBox.ItemContainerStyle>
+          </ListBox>
+        </Grid>
+      </Border>
+    </Grid>
+    <Grid Grid.Row="6" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <TextBlock x:Name="ListStatus" Foreground="{StaticResource TextMutedBrush}"/>
+      <TextBlock x:Name="TargetHint" Grid.Column="1" HorizontalAlignment="Right" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis"/>
+    </Grid>
+    <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+      <Button x:Name="SelectButton" Content="선택" Style="{StaticResource PrimaryButtonStyle}" Click="Select_Click"/>
+      <Button Content="취소" Click="Cancel_Click" Margin="0"/>
+    </StackPanel>
+  </Grid>
+</Window>

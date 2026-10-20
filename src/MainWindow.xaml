@@ -1,0 +1,159 @@
+<Window x:Class="SynologyShareManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DK Synology Share Manager" Icon="/Assets/DKShareManager.ico"
+        Width="1360" Height="790" MinWidth="1070" MinHeight="640"
+        WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" Closing="Window_Closing">
+  <Grid Margin="20">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/><RowDefinition Height="15"/>
+      <RowDefinition Height="Auto"/><RowDefinition Height="15"/>
+      <RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <StackPanel>
+        <TextBlock Text="DK Synology Share Manager" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentDarkBrush}"/>
+        <TextBlock x:Name="ConnectionLabel" Text="NAS 연결 전" Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0"/>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button x:Name="ConnectButton" Click="Connect_Click" Content="NAS 연결 / 변경"/>
+        <Button x:Name="RefreshButton" Click="Refresh_Click" Content="새로고침"/>
+        <Button x:Name="SyncButton" Click="Sync_Click" Content="상태 재동기화" Margin="0"/>
+      </StackPanel>
+    </Grid>
+    <!-- Local filters operate on all fetched links before paging. Link creation is separate. -->
+    <StackPanel Grid.Row="2">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/><ColumnDefinition Width="155"/>
+          <ColumnDefinition Width="145"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="SearchBox" Grid.Column="0" Margin="0,0,9,0" ToolTip="이름, 경로, URL, 생성 계정" TextChanged="Filter_Changed"/>
+        <ComboBox x:Name="OwnerFilter" Grid.Column="1" Margin="0,0,9,0" SelectionChanged="Filter_Changed"/>
+        <ComboBox x:Name="StatusFilter" Grid.Column="2" SelectionChanged="Filter_Changed">
+          <ComboBoxItem Content="전체 상태" IsSelected="True"/>
+          <ComboBoxItem Content="유효"/><ComboBoxItem Content="시작 전"/>
+          <ComboBoxItem Content="만료"/><ComboBoxItem Content="손상"/>
+        </ComboBox>
+        <Button x:Name="CreateButton" Grid.Column="4" Content="＋ 새 공유 링크" Style="{StaticResource PrimaryButtonStyle}" Click="Create_Click" Margin="0"/>
+      </Grid>
+      <StackPanel Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
+        <TextBlock Text="기간 검색" VerticalAlignment="Center" Margin="0,0,9,0"/>
+        <ComboBox x:Name="DateFieldFilter" Width="114" SelectionChanged="Filter_Changed" ToolTip="공유 링크 시작일 또는 만료일로 검색합니다. 생성·수정일은 공식 API에서 제공하지 않습니다.">
+          <ComboBoxItem Content="만료일" IsSelected="True"/>
+          <ComboBoxItem Content="시작일"/>
+        </ComboBox>
+        <DatePicker x:Name="DateFromFilter" Width="150" Height="30" Padding="0" VerticalAlignment="Center" Margin="9,0,0,0" SelectedDateChanged="Filter_Changed" ToolTip="시작 날짜 (포함)" Style="{StaticResource CenteredDatePickerStyle}"/>
+        <TextBlock Text="~" Margin="9,0,0,0" VerticalAlignment="Center"/>
+        <DatePicker x:Name="DateToFilter" Width="150" Height="30" Padding="0" VerticalAlignment="Center" Margin="9,0,0,0" SelectedDateChanged="Filter_Changed" ToolTip="종료 날짜 (포함)" Style="{StaticResource CenteredDatePickerStyle}"/>
+        <Button Content="기간 초기화" Click="ClearDateFilter_Click" Margin="9,0,0,0"/>
+        <TextBlock Text="미지정·무제한 링크는 기간 검색에서 제외" Foreground="{StaticResource TextMutedBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+      </StackPanel>
+    </StackPanel>
+    <Grid Grid.Row="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3.2*"/><ColumnDefinition Width="13"/><ColumnDefinition Width="1.35*"/>
+      </Grid.ColumnDefinitions>
+      <Grid Grid.Column="0">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="9"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+          <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBlock Text="공유 링크 목록" Style="{StaticResource SectionTitleStyle}" VerticalAlignment="Center"/>
+          <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <Button x:Name="EditButton" Click="Edit_Click" Content="선택 항목 설정 수정"/>
+            <Button x:Name="DeleteButton" Click="Delete_Click" Content="선택 항목 삭제" Margin="0"/>
+          </StackPanel>
+        </Grid>
+        <Border Grid.Row="2" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Background="White" CornerRadius="7">
+          <DataGrid x:Name="LinksGrid" AutoGenerateColumns="False" CanUserAddRows="False"
+                    SelectionMode="Extended" SelectionUnit="FullRow" IsReadOnly="True" Margin="2"
+                    GridLinesVisibility="None" HeadersVisibility="Column" RowHeight="37" ColumnHeaderHeight="37" Sorting="LinksGrid_Sorting"
+                    AlternatingRowBackground="#F8FBFE" RowBackground="White"
+                    BorderThickness="0" Background="White"
+                    HorizontalGridLinesBrush="#EAF1F7" SelectionChanged="LinksGrid_SelectionChanged" MouseDoubleClick="LinksGrid_MouseDoubleClick">
+            <DataGrid.Resources>
+              <Style x:Key="LinkTextStyle" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="{StaticResource TextMainBrush}"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                    <Setter Property="Foreground" Value="White"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+              <Style TargetType="DataGridRow">
+                <Setter Property="ToolTip" Value="{Binding Name}"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="BorderBrush" Value="#EAF1F7"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Style.Triggers>
+                  <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource RowHoverBrush}"/></Trigger>
+                  <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource AccentBrush}"/><Setter Property="Foreground" Value="White"/></Trigger>
+                </Style.Triggers>
+              </Style>
+              <Style TargetType="DataGridCell">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="7,0"/>
+                <Setter Property="Foreground" Value="{StaticResource TextMainBrush}"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource AccentBrush}"/><Setter Property="Foreground" Value="White"/></Trigger></Style.Triggers>
+              </Style>
+              <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{StaticResource AccentSoftBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentDarkBrush}"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Padding" Value="9,0"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}"/>
+                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+              </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="이름" Binding="{Binding Name}" SortMemberPath="Name" ElementStyle="{StaticResource LinkTextStyle}" MinWidth="235" Width="2.3*"/>
+              <DataGridTextColumn Header="소유 계정" Binding="{Binding Owner}" SortMemberPath="Owner" ElementStyle="{StaticResource LinkTextStyle}" MinWidth="100" Width="1*"/>
+              <DataGridTextColumn Header="상태" Binding="{Binding StatusLabel}" SortMemberPath="StatusLabel" ElementStyle="{StaticResource LinkTextStyle}" MinWidth="68" Width="0.7*"/>
+              <DataGridTextColumn Header="만료일" Binding="{Binding ExpiredLabel}" SortMemberPath="ExpiredLabel" ElementStyle="{StaticResource LinkTextStyle}" MinWidth="100" Width="1*"/>
+              <DataGridTextColumn Header="유형" Binding="{Binding TypeLabel}" SortMemberPath="TypeLabel" ElementStyle="{StaticResource LinkTextStyle}" MinWidth="55" Width="0.6*"/>
+              <DataGridTextColumn Header="암호" Binding="{Binding PasswordLabel}" SortMemberPath="PasswordLabel" ElementStyle="{StaticResource LinkTextStyle}" MinWidth="68" Width="0.7*"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </Border>
+      </Grid>
+      <Border Grid.Column="2" Background="White" CornerRadius="7" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Padding="12">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel>
+            <TextBlock Text="선택한 링크" Style="{StaticResource SectionTitleStyle}"/>
+            <TextBlock x:Name="DetailHint" Margin="0,6,0,6" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Text="목록에서 링크 하나를 선택하세요."/>
+            <TextBlock Text="이름" Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,2"/>
+            <TextBox x:Name="NameBox" IsReadOnly="True"/>
+            <TextBlock Text="생성 계정" Foreground="{StaticResource TextMutedBrush}" Margin="0,7,0,2"/>
+            <TextBox x:Name="OwnerBox" IsReadOnly="True"/>
+            <TextBlock Text="NAS 원본 경로" Foreground="{StaticResource TextMutedBrush}" Margin="0,7,0,2"/>
+            <TextBox x:Name="PathBox" IsReadOnly="True" TextWrapping="Wrap"/>
+            <TextBlock Text="상태 / 비밀번호" Foreground="{StaticResource TextMutedBrush}" Margin="0,7,0,2"/>
+            <TextBox x:Name="StateBox" IsReadOnly="True"/>
+            <TextBlock Text="시작 / 만료" Foreground="{StaticResource TextMutedBrush}" Margin="0,7,0,2"/>
+            <TextBox x:Name="DatesBox" IsReadOnly="True"/>
+            <TextBlock Text="공유 URL" Foreground="{StaticResource TextMutedBrush}" Margin="0,7,0,2"/>
+            <TextBox x:Name="UrlBox" IsReadOnly="True" Height="32" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+              <Button x:Name="CopyButton" Content="URL 복사" Click="Copy_Click"/>
+              <Button x:Name="OpenButton" Content="URL 열기" Click="Open_Click" Margin="0"/>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+    <Grid Grid.Row="5" Margin="0,12,0,0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <TextBlock x:Name="StatusText" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" Text="연결 대기"/>
+      <TextBlock x:Name="CountText" Grid.Column="1" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}"/>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button x:Name="PreviousPageButton" Content="이전" Click="PreviousPage_Click" MinWidth="52"/>
+        <TextBlock x:Name="PageText" Text="1 / 1" MinWidth="70" VerticalAlignment="Center" TextAlignment="Center"/>
+        <Button x:Name="NextPageButton" Content="다음" Click="NextPage_Click" Margin="0" MinWidth="52"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

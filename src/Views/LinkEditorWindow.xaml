@@ -1,0 +1,49 @@
+<Window x:Class="SynologyShareManager.Views.LinkEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DK Synology Share Manager — 공유 링크" Icon="/Assets/DKShareManager.ico" Width="575" Height="520" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{StaticResource PageBrush}">
+  <Grid Margin="22">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <TextBlock x:Name="HeaderText" Text="공유 링크 생성" FontSize="19" FontWeight="SemiBold" Foreground="{StaticResource AccentDarkBrush}"/>
+    <StackPanel Grid.Row="1" Margin="0,14,0,0">
+      <TextBlock Text="NAS 파일·폴더 경로" Margin="0,0,0,5"/>
+      <DockPanel>
+        <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="NAS 탐색..." Margin="8,0,0,0" Click="Browse_Click"/>
+        <TextBox x:Name="PathInput" IsReadOnly="True"/>
+      </DockPanel>
+      <!-- Single aligned row per date: label, checkbox, picker and explanatory hint. -->
+      <Grid Margin="0,15,0,0" Height="33">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="64"/><ColumnDefinition Width="58"/>
+          <ColumnDefinition Width="175"/><ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="시작일" VerticalAlignment="Center"/>
+        <CheckBox Grid.Column="1" x:Name="AvailableCheck" Content="지정" VerticalAlignment="Center" Checked="DateCheck_Changed" Unchecked="DateCheck_Changed"/>
+        <DatePicker Grid.Column="2" x:Name="AvailablePicker" Width="175" Height="30" Padding="0" VerticalAlignment="Center" IsEnabled="False" Style="{StaticResource CenteredDatePickerStyle}"/>
+        <TextBlock Grid.Column="3" Text="미지정 시 즉시 사용" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}"/>
+      </Grid>
+      <Grid Margin="0,15,0,0" Height="33">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="64"/><ColumnDefinition Width="58"/>
+          <ColumnDefinition Width="175"/><ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="만료일" VerticalAlignment="Center"/>
+        <CheckBox Grid.Column="1" x:Name="ExpireCheck" Content="지정" VerticalAlignment="Center" Checked="DateCheck_Changed" Unchecked="DateCheck_Changed"/>
+        <DatePicker Grid.Column="2" x:Name="ExpirePicker" Width="175" Height="30" Padding="0" VerticalAlignment="Center" IsEnabled="False" Style="{StaticResource CenteredDatePickerStyle}"/>
+        <TextBlock Grid.Column="3" Text="미지정 시 무제한" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}"/>
+      </Grid>
+      <TextBlock Text="공유 비밀번호 (최대 16자)" Margin="0,18,0,6"/>
+      <ComboBox x:Name="PasswordMode" SelectionChanged="PasswordMode_Changed">
+        <ComboBoxItem Content="비밀번호 없음" IsSelected="True"/>
+        <ComboBoxItem Content="새 비밀번호 설정"/>
+        <ComboBoxItem Content="기존 비밀번호 해제"/>
+      </ComboBox>
+      <PasswordBox x:Name="PasswordInput" Margin="0,7,0,0" Padding="7,5" IsEnabled="False"/>
+      <TextBlock x:Name="PasswordHint" Margin="0,8,0,0" Foreground="{StaticResource TextMutedBrush}" Text="기존 비밀번호는 조회하거나 표시하지 않습니다."/>
+    </StackPanel>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button x:Name="SaveButton" Style="{StaticResource PrimaryButtonStyle}" Content="저장" Click="Save_Click"/>
+      <Button Content="취소" Click="Cancel_Click" Margin="0"/>
+    </StackPanel>
+  </Grid>
+</Window>

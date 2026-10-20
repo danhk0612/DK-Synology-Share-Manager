@@ -1,0 +1,30 @@
+<Window x:Class="SynologyShareManager.Views.ConnectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DK Synology Share Manager — NAS 연결" Icon="/Assets/DKShareManager.ico"
+        Width="520" Height="510" MinWidth="465" MinHeight="455" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner">
+  <Grid Margin="22">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <TextBlock Text="DSM 관리자 계정 연결" FontSize="19" FontWeight="SemiBold" Foreground="{StaticResource AccentDarkBrush}"/>
+    <ScrollViewer Grid.Row="1" Margin="0,15,0,14" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="0,0,5,2">
+        <TextBlock Text="HTTPS 주소 (예: https://nas.example.com:5001)" Margin="0,0,0,5"/>
+        <TextBox x:Name="AddressBox"/>
+        <TextBlock Text="DSM 관리자 계정" Margin="0,13,0,5"/>
+        <TextBox x:Name="AccountBox"/>
+        <TextBlock Text="비밀번호" Margin="0,13,0,5"/>
+        <PasswordBox x:Name="PasswordInput"/>
+        <TextBlock Text="OTP 코드 (필요할 때만 입력)" Margin="0,13,0,5"/>
+        <TextBox x:Name="OtpBox"/>
+        <CheckBox x:Name="SaveCheck" Margin="0,14,0,0" Content="연결 정보와 암호화된 비밀번호를 EXE 폴더에 저장" IsChecked="True" Checked="SaveCheck_Changed" Unchecked="SaveCheck_Changed"/>
+        <CheckBox x:Name="RememberDeviceCheck" Margin="0,10,0,0" Content="이 PC에서 OTP 인증 기억 (신뢰 장치)" IsChecked="False"/>
+        <TextBlock Text="최초 등록 시 OTP가 필요하며, 신뢰가 해제되면 다시 입력해야 합니다." Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="19,6,0,0"/>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Content="취소" Click="Cancel_Click"/>
+      <Button Content="연결" Click="Accept_Click" IsDefault="True" Style="{StaticResource PrimaryButtonStyle}" Margin="0"/>
+    </StackPanel>
+  </Grid>
+</Window>

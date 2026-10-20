@@ -1,0 +1,48 @@
+name: Windows build and release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build standalone Windows EXE
+        shell: pwsh
+        run: ./publish.ps1
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $name = 'DKSynologyShareManager-v1.4.2-win-x64'
+          New-Item -ItemType Directory -Force -Path $name | Out-Null
+          Copy-Item dist/DKSynologyShareManager.exe $name/
+          Copy-Item README.md,LICENSE $name/
+          Compress-Archive -Path $name -DestinationPath "$name.zip" -Force
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DKSynologyShareManager-v1.4.2-win-x64
+          path: DKSynologyShareManager-v1.4.2-win-x64.zip
+
+      - name: Publish GitHub Release v1.4.2
+        if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release v1.4.2]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release create v1.4.2 DKSynologyShareManager-v1.4.2-win-x64.zip --target "${{ github.sha }}" --title "DK Synology Share Manager v1.4.2" --notes "Windows 10/11 x64용 첫 공개 배포입니다. 압축 해제 후 DKSynologyShareManager.exe를 실행하세요. Synology DSM File Station 공유 링크 조회·생성·수정·삭제, NAS 탐색, 사용자/기간 필터, OTP 신뢰 장치 로그인 등을 지원합니다. MIT License."

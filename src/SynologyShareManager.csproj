@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>DKSynologyShareManager</AssemblyName>
+    <Version>1.4.2</Version>
+    <AssemblyTitle>DK Synology Share Manager</AssemblyTitle>
+    <Product>DK Synology Share Manager</Product>
+    <ApplicationIcon>Assets\DKShareManager.ico</ApplicationIcon>
+    <RootNamespace>SynologyShareManager</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\DKShareManager.ico" />
+  </ItemGroup>
+</Project>

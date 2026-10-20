@@ -1,0 +1,21 @@
+# Generated Windows builds and IDE state
+**/bin/
+**/obj/
+dist/
+.vs/
+*.user
+*.suo
+*.pdb
+
+# Credentials / local settings
+SynologyShareManager.config.json
+**/SynologyShareManager.config.json
+*.config.local.json
+
+# Python test caches
+__pycache__/
+*.pyc
+
+# OS files
+Thumbs.db
+.DS_Store
