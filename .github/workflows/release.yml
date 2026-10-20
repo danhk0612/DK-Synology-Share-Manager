@@ -20,11 +20,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Build standalone Windows EXE
+      - name: Build framework-dependent Windows EXE
         shell: pwsh
         run: ./publish.ps1
 
-      - name: Package release
+      - name: Package lightweight release
         shell: pwsh
         run: |
           $name = 'DKSynologyShareManager-v1.4.2-win-x64'
@@ -32,17 +32,28 @@ jobs:
           Copy-Item dist/DKSynologyShareManager.exe $name/
           Copy-Item README.md,LICENSE $name/
           Compress-Archive -Path $name -DestinationPath "$name.zip" -Force
+          $archive = Get-Item "$name.zip"
+          Write-Host "Lightweight release ZIP: $($archive.Length) bytes"
+          if ($archive.Length -ge 20MB) {
+            throw 'Release ZIP is too large for framework-dependent packaging.'
+          }
 
-      - name: Upload executable artifact
+      - name: Upload lightweight executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: DKSynologyShareManager-v1.4.2-win-x64
           path: DKSynologyShareManager-v1.4.2-win-x64.zip
 
-      - name: Publish GitHub Release v1.4.2
+      - name: Replace GitHub Release asset with lightweight version
         if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release v1.4.2]')
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          gh release create v1.4.2 DKSynologyShareManager-v1.4.2-win-x64.zip --target "${{ github.sha }}" --title "DK Synology Share Manager v1.4.2" --notes "Windows 10/11 x64용 첫 공개 배포입니다. 압축 해제 후 DKSynologyShareManager.exe를 실행하세요. Synology DSM File Station 공유 링크 조회·생성·수정·삭제, NAS 탐색, 사용자/기간 필터, OTP 신뢰 장치 로그인 등을 지원합니다. MIT License."
+          $name = 'DKSynologyShareManager-v1.4.2-win-x64.zip'
+          gh release upload v1.4.2 $name --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed.' }
+          gh release edit v1.4.2 --notes "Windows 10/11 x64 경량 배포판 (Framework-dependent 단일 EXE). .NET 10 Desktop Runtime (x64)이 필요합니다. 미설치 시 일반적으로 실행 호스트가 설치 안내를 표시하며, README에서 공식 설치 링크도 제공합니다. Synology DSM File Station 공유 링크 통합 관리 기능을 지원합니다. MIT License."
+          if ($LASTEXITCODE -ne 0) { throw 'Release notes update failed.' }
+          gh release view v1.4.2 --json assets,url
+          if ($LASTEXITCODE -ne 0) { throw 'Release verification failed.' }
