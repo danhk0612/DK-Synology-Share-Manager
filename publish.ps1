@@ -2,6 +2,6 @@
 $ErrorActionPreference = 'Stop'
 $project = Join-Path $PSScriptRoot 'src\SynologyShareManager.csproj'
 $out = Join-Path $PSScriptRoot 'dist'
-dotnet publish $project -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -o $out
+dotnet publish $project -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -o $out
 if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed.' }
 Write-Host "EXE ready: $out\DKSynologyShareManager.exe"
